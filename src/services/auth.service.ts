@@ -1,8 +1,7 @@
-import { prisma } from "../Config/dotabase";
+import { prisma } from "../Config/database";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signToken } from "../utils/jwt";
 import AppError from "../utils/AppError";
-import { throws } from "node:assert";
 
 interface RegisterInput {
   name: string;
