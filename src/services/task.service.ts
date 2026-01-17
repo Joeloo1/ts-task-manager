@@ -153,3 +153,69 @@ export const getTaskById = async (taskId: string, userId: string) => {
 
   return task;
 };
+
+export const UpdateTaskService = async (
+  taskId: string,
+  userId: string,
+  data: UpdateTaskInput,
+) => {
+  const existingTask = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      authorId: userId,
+    },
+  });
+
+  if (!existingTask) {
+    throw new AppError("Task not found", 404);
+  }
+
+  if (data.projectId) {
+    const project = await prisma.project.findFirst({
+      where: {
+        id: data.projectId,
+        ownerId: userId,
+      },
+    });
+
+    if (!project) {
+      throw new AppError("Project not found or access denied", 404);
+    }
+  }
+
+  const task = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      ...data,
+      dueDate: data.dueDate ? new Date(data.dueDate) : undefined,
+    },
+    include: {
+      tags: true,
+      project: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return task;
+};
+
+export const deleteTaskService = async (taskId: string, userId: string) => {
+  const task = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      authorId: userId,
+    },
+  });
+
+  if (!task) {
+    throw new AppError("Task not found", 404);
+  }
+
+  await prisma.task.delete({
+    where: { id: taskId },
+  });
+};
