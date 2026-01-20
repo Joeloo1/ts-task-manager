@@ -219,3 +219,65 @@ export const deleteTaskService = async (taskId: string, userId: string) => {
     where: { id: taskId },
   });
 };
+
+export const addTagsToTaskService = async (
+  taskId: string,
+  userId: string,
+  tagIds: string[],
+) => {
+  const task = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      authorId: userId,
+    },
+  });
+
+  if (!task) {
+    throw new AppError("Task not found", 404);
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      tags: {
+        connect: tagIds.map((id) => ({ id })),
+      },
+    },
+    include: {
+      tags: true,
+    },
+  });
+
+  return updatedTask;
+};
+
+export const removeTagsService = async (
+  taskId: string,
+  userId: string,
+  tagIds: string[],
+) => {
+  const task = await prisma.task.findFirst({
+    where: {
+      id: taskId,
+      authorId: userId,
+    },
+  });
+
+  if (!task) {
+    throw new AppError("Task not found", 404);
+  }
+
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      tags: {
+        disconnect: tagIds.map((id) => ({ id })),
+      },
+    },
+    include: {
+      tags: true,
+    },
+  });
+
+  return updatedTask;
+};

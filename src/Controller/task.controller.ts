@@ -6,6 +6,8 @@ import {
   getTaskById,
   UpdateTaskService,
   deleteTaskService,
+  addTagsToTaskService,
+  removeTagsService,
 } from "../services/task.service";
 import AppError from "../utils/AppError";
 
@@ -84,3 +86,40 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
     message: "Task deleted successfully",
   });
 });
+
+export const addTagsToTask = async (req: Request, res: Response) => {
+  const taskId = String(req.params.taskId);
+  const { tagIds } = req.body;
+  const userId = req.user!.id;
+
+  if (!Array.isArray(tagIds) || tagIds.length === 0) {
+    return res.status(400).json({
+      status: "error",
+      message: "tagIds must be a non-empty array",
+    });
+  }
+
+  const task = await addTagsToTaskService(taskId, userId, tagIds);
+
+  res.status(200).json({
+    status: "success",
+    data: task,
+  });
+};
+
+export const removeTagsFromTask = catchAsync(
+  async (req: Request, res: Response) => {
+    const task = await removeTagsService(
+      req.params.taskId as string,
+      req.user!.id,
+      [req.params.tagId as string],
+    );
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        task,
+      },
+    });
+  },
+);

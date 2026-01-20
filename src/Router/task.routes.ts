@@ -6,6 +6,8 @@ import {
   getTask,
   updateTask,
   deleteTask,
+  addTagsToTask,
+  removeTagsFromTask,
 } from "../Controller/task.controller";
 import { createTaskSchema, updateTaskSchema } from "../Schema/task.schema";
 import { protect } from "../Middleware/auth.middleware";
@@ -24,5 +26,8 @@ router
   .get(getTask)
   .patch(validateRequest(updateTaskSchema), updateTask)
   .delete(deleteTask);
+
+router.route("/:taskId/tags").patch(addTagsToTask);
+router.route("/:taskId/tags/:tagId").delete(removeTagsFromTask);
 
 export default router;
