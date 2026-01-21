@@ -1,6 +1,7 @@
 import { prisma } from "../Config/database";
 import { Status, Priority } from "@prisma/client";
 import AppError from "../utils/AppError";
+import logger from "../Config/winston";
 
 interface CreateTaskInput {
   title: string;
@@ -53,10 +54,12 @@ export const createTaskService = async (
     });
 
     if (!project) {
+      logger.warn("Project not found or access denied");
       throw new AppError("project not found or access denied", 404);
     }
   }
 
+  logger.info(`User with ID: ${userId} creating a task`);
   const task = await prisma.task.create({
     data: {
       ...taskData,
@@ -95,6 +98,7 @@ export const getAllTaskService = async (
 
   const skip = (page - 1) * limit;
 
+  logger.info("Fetching all tasks");
   const [tasks, total] = await Promise.all([
     prisma.task.findMany({
       where,
@@ -127,6 +131,7 @@ export const getAllTaskService = async (
 
 export const getTaskById = async (taskId: string, userId: string) => {
   if (!taskId) {
+    logger.warn("Task ID is required");
     throw new AppError("Task ID is required", 400);
   }
 
@@ -150,7 +155,7 @@ export const getTaskById = async (taskId: string, userId: string) => {
   if (!task) {
     throw new AppError("Task not found", 404);
   }
-
+  logger.info("Fetching task by ID: ", taskId);
   return task;
 };
 
@@ -183,6 +188,7 @@ export const UpdateTaskService = async (
     }
   }
 
+  logger.info(`Updating task with ID : ${taskId}`);
   const task = await prisma.task.update({
     where: { id: taskId },
     data: {
@@ -215,6 +221,8 @@ export const deleteTaskService = async (taskId: string, userId: string) => {
     throw new AppError("Task not found", 404);
   }
 
+  logger.info(`Deleting task with ID : ${taskId}`);
+
   await prisma.task.delete({
     where: { id: taskId },
   });
@@ -235,6 +243,8 @@ export const addTagsToTaskService = async (
   if (!task) {
     throw new AppError("Task not found", 404);
   }
+
+  logger.info(`Adding tags to task`);
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },
@@ -266,6 +276,8 @@ export const removeTagsService = async (
   if (!task) {
     throw new AppError("Task not found", 404);
   }
+
+  logger.info("Removing tags from task");
 
   const updatedTask = await prisma.task.update({
     where: { id: taskId },

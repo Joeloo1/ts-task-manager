@@ -2,6 +2,7 @@ import { prisma } from "../Config/database";
 import { hashPassword, comparePassword } from "../utils/password";
 import { signToken } from "../utils/jwt";
 import AppError from "../utils/AppError";
+import logger from "../Config/winston";
 
 interface RegisterInput {
   name: string;
@@ -19,6 +20,7 @@ export const register = async ({ email, name, password }: RegisterInput) => {
     where: { email },
   });
   if (existingUser) {
+    logger.warn("Email already in use", email);
     throw new AppError("Email already in use", 400);
   }
 
@@ -48,7 +50,8 @@ export const Login = async ({ email, password }: LoginInput) => {
   });
 
   if (!user) {
-    throw new AppError("Incorrect email and password", 401);
+    logger.warn("Incorrect email or password");
+    throw new AppError("Incorrect email or password", 401);
   }
 
   const isPasswordValid = await comparePassword(password, user.password);

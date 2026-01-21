@@ -7,9 +7,11 @@ import {
   deleteProjectService,
 } from "../services/project.service";
 import catchAsync from "../utils/catchAsync";
+import logger from "../Config/winston";
 
 export const getAllProject = catchAsync(async (req: Request, res: Response) => {
   const project = await getAllProjectService(req.user!.id);
+  logger.info("Fetching all project");
   res.status(200).json({
     status: "success",
     data: {
@@ -25,6 +27,7 @@ export const getProjectById = catchAsync(
 
       req.params.id as string,
     );
+    logger.info("Fetching a project by id", project.id);
     res.status(200).json({
       status: "success",
       data: {
@@ -36,6 +39,7 @@ export const getProjectById = catchAsync(
 
 export const createProject = catchAsync(async (req: Request, res: Response) => {
   const project = await createProjectService(req.user!.id, req.body);
+  logger.info("Creating project");
   res.status(201).json({
     status: "success",
     data: {
@@ -50,6 +54,7 @@ export const updateProject = catchAsync(async (req: Request, res: Response) => {
     req.user!.id,
     req.body,
   );
+  logger.info("updating project", project.id);
   res.status(200).json({
     status: "success",
     data: {
@@ -60,6 +65,7 @@ export const updateProject = catchAsync(async (req: Request, res: Response) => {
 
 export const deleteProject = catchAsync(async (req: Request, res: Response) => {
   await deleteProjectService(req.params.id as string, req.user!.id);
+  logger.info("Deleting project");
   res.status(200).json({
     status: "success",
     message: "Project deleted successfully",

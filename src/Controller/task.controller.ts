@@ -10,10 +10,13 @@ import {
   removeTagsService,
 } from "../services/task.service";
 import AppError from "../utils/AppError";
+import logger from "../Config/winston";
 
 export const createTask = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
   const task = await createTaskService(userId, req.body);
+
+  logger.info(`User with ID: ${userId} Creating task`);
 
   res.status(201).json({
     status: "success",
@@ -38,6 +41,7 @@ export const getAllTask = catchAsync(async (req: Request, res: Response) => {
     limit: limitNum,
   });
 
+  logger.info(`User with ID: ${userId} Fetching all tasks`);
   res.status(200).json({
     status: "success",
     data: result,
@@ -49,10 +53,12 @@ export const getTask = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
 
   if (!id || Array.isArray(id)) {
+    logger.warn(`Invalid task ID: ${id}`);
     throw new AppError("Invalid task ID", 400);
   }
 
   const task = await getTaskById(id, userId);
+  logger.info(`User with ID: ${userId} getting a task`);
 
   res.status(200).json({
     status: "success",
@@ -71,6 +77,7 @@ export const updateTask = catchAsync(async (req: Request, res: Response) => {
     req.body,
   );
 
+  logger.info("Updating task", task.id);
   res.status(200).json({
     status: "success",
     data: {
@@ -81,10 +88,12 @@ export const updateTask = catchAsync(async (req: Request, res: Response) => {
 
 export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   await deleteTaskService(req.params.id as string, req.user!.id);
+  logger.info("deleting task");
   res.status(200).json({
     status: "success",
     message: "Task deleted successfully",
   });
+  logger.info("Task deleted successfully");
 });
 
 export const addTagsToTask = async (req: Request, res: Response) => {

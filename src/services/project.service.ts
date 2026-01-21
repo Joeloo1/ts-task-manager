@@ -1,5 +1,6 @@
 import { prisma } from "../Config/database";
 import AppError from "../utils/AppError";
+import logger from "../Config/winston";
 
 interface CreateProjectInput {
   name: string;
@@ -41,6 +42,7 @@ export const getProjectService = async (userId: string, projectId: string) => {
   });
 
   if (!project) {
+    logger.warn("Project not found");
     throw new AppError("Project not found", 404);
   }
 
