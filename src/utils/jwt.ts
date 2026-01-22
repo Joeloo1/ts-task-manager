@@ -1,6 +1,7 @@
 import JWT from "jsonwebtoken";
+import config from "../Config/config.env";
 
-const expires = process.env.JWT_EXPIRES_IN || "20d";
+const expires = config.JWT_EXPIRES_IN || "20d";
 const options = {
   expiresIn: expires,
 } as JWT.SignOptions;
