@@ -11,20 +11,19 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
-
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  password      String    
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  tasks         Task[]
-  projects      Project[]
+  tasks    Task[]
+  projects Project[]
 }
 
 model Project {
@@ -32,31 +31,31 @@ model Project {
   name        String
   description String?
   createdAt   DateTime @default(now())
-  
-  owner       User     @relation(fields: [ownerId], references: [id])
-  ownerId     String
 
-  tasks       Task[]
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  tasks Task[]
 }
 
 model Task {
-  id          String   @id @default(uuid())
-  title       String
-  description String?
-  status      Status   @default(TODO)
-  priority    Priority @default(MEDIUM)
-  dueDate     DateTime?
-  reminderSent  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String    @id @default(uuid())
+  title        String
+  description  String?
+  status       Status    @default(TODO)
+  priority     Priority  @default(MEDIUM)
+  dueDate      DateTime?
+  reminderSent Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    String
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
 
-  project     Project? @relation(fields: [projectId], references: [id])
-  projectId   String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
 
-  tags        Tag[]
+  tags Tag[]
 }
 
 model Tag {
@@ -64,7 +63,6 @@ model Tag {
   name  String @unique
   tasks Task[]
 }
-
 
 enum Status {
   TODO
