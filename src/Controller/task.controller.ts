@@ -96,7 +96,7 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   logger.info("Task deleted successfully");
 });
 
-export const addTagsToTask = async (req: Request, res: Response) => {
+export const addTagsToTask = catchAsync(async (req: Request, res: Response) => {
   const taskId = String(req.params.taskId);
   const { tagIds } = req.body;
   const userId = req.user!.id;
@@ -114,7 +114,7 @@ export const addTagsToTask = async (req: Request, res: Response) => {
     status: "success",
     data: task,
   });
-};
+});
 
 export const removeTagsFromTask = catchAsync(
   async (req: Request, res: Response) => {
