@@ -1,4 +1,6 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
+// import { prisma } from "../Config/database";
+import * as factory from "./handlerFactory";
 import catchAsync from "../utils/catchAsync";
 import {
   createTaskService,
@@ -9,9 +11,78 @@ import {
   addTagsToTaskService,
   removeTagsService,
 } from "../services/task.service";
-import AppError from "../utils/AppError";
-import logger from "../Config/winston";
+// import AppError from "../utils/AppError";
+// import logger from "../Config/winston";
 
+export const getAllTask = factory.getAll(getAllTaskService);
+export const getTask = factory.getOne(getTaskById);
+export const updateTask = factory.updateOne(UpdateTaskService);
+export const deleteTask = factory.deleteOne(deleteTaskService);
+export const createTask = factory.createOne(createTaskService);
+
+/*
+export const getAllTask = factory.getAll(prisma.task, {
+  ownerField: "authorId",
+  include: {
+    tags: true,
+    project: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+});
+
+export const getTask = factory.getOne(prisma.task, {
+  ownerField: "authorId",
+  include: {
+    tags: true,
+    project: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+    },
+  },
+});
+
+export const updateTask = factory.updateOne(prisma.task, {
+  ownerField: "authorId",
+  include: {
+    tags: true,
+    project: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+});
+
+export const deleteTask = factory.deleteOne(prisma.task, {
+  ownerField: "authorId",
+});
+*/
+
+/*
+export const createTask = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.id;
+  const task = await createTaskService(userId, req.body);
+
+  logger.info(`User with ID: ${userId} Creating task`);
+
+  res.status(201).json({
+    status: "success",
+    data: {
+      task,
+    },
+  });
+});
+*/
+
+/*
 export const createTask = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.id;
   const task = await createTaskService(userId, req.body);
@@ -95,6 +166,7 @@ export const deleteTask = catchAsync(async (req: Request, res: Response) => {
   });
   logger.info("Task deleted successfully");
 });
+*/
 
 export const addTagsToTask = catchAsync(async (req: Request, res: Response) => {
   const taskId = String(req.params.taskId);
