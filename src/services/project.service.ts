@@ -1,7 +1,9 @@
 import { prisma } from "../Config/database";
-import AppError from "../utils/AppError";
-import logger from "../Config/winston";
+import * as factory from "./handlerFactory.service";
+// import AppError from "../utils/AppError";
+// import logger from "../Config/winston";
 
+/*
 interface CreateProjectInput {
   name: string;
   description?: string;
@@ -11,7 +13,48 @@ interface UpdateProjectInput {
   name?: string;
   description?: string;
 }
+*/
 
+export const getAllProjectService = factory.getAll(prisma.project, {
+  ownerField: "ownerId",
+  include: {
+    _count: {
+      select: { tasks: true },
+    },
+  },
+});
+
+export const getProjectService = factory.getOne(prisma.project, {
+  ownerField: "ownerId",
+  include: {
+    tasks: {
+      include: {
+        tags: true,
+      },
+    },
+  },
+});
+
+export const createProjectService = factory.createOne(prisma.project, {
+  ownerField: "ownerId",
+});
+
+export const updateProjectService = (
+  projectId: string,
+  userId: string,
+  data: any,
+) =>
+  factory.updateOne(prisma.project, { ownerField: "ownerId" })(
+    projectId,
+    data,
+    userId,
+  );
+
+export const deleteProjectService = factory.deleteOne(prisma.project, {
+  ownerField: "ownerId",
+});
+
+/*
 export const getAllProjectService = async (userId: string) => {
   const projects = await prisma.project.findMany({
     where: { ownerId: userId },
@@ -105,3 +148,4 @@ export const deleteProjectService = async (
     where: { id: projectId },
   });
 };
+*/
