@@ -1,8 +1,10 @@
 import { prisma } from "../Config/database";
-import { Status, Priority } from "@prisma/client";
+// import { Status, Priority } from "@prisma/client";
+import * as factory from "./handlerFactory.service";
 import AppError from "../utils/AppError";
 import logger from "../Config/winston";
 
+/*
 interface CreateTaskInput {
   title: string;
   description?: string;
@@ -38,11 +40,40 @@ interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
+*/
 
-export const createTaskService = async (
-  userId: string,
-  data: CreateTaskInput,
-) => {
+export const getAllTaskService = factory.getAll(prisma.task, {
+  ownerField: "authorId",
+  include: {
+    tags: true,
+    project: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+  },
+});
+
+export const getTaskById = factory.getOne(prisma.task, {
+  ownerField: "authorId",
+  include: {
+    tags: true,
+    project: {
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+    },
+  },
+});
+
+export const deleteTaskService = factory.deleteOne(prisma.task, {
+  ownerField: "authorId",
+});
+
+export const createTaskService = async (userId: string, data: any) => {
   const { tagIds, ...taskData } = data;
 
   if (taskData.projectId) {
@@ -60,6 +91,7 @@ export const createTaskService = async (
   }
 
   logger.info(`User with ID: ${userId} creating a task`);
+
   const task = await prisma.task.create({
     data: {
       ...taskData,
@@ -67,7 +99,7 @@ export const createTaskService = async (
       authorId: userId,
       tags: tagIds
         ? {
-            connect: tagIds.map((id) => ({ id })),
+            connect: tagIds.map((id: string) => ({ id })),
           }
         : undefined,
     },
@@ -84,85 +116,10 @@ export const createTaskService = async (
   return task;
 };
 
-export const getAllTaskService = async (
-  userId: string,
-  filter: TaskFilters,
-): Promise<PaginatedResponse<any>> => {
-  const { status, priority, projectId, page = 1, limit = 10 } = filter;
-
-  const where: Record<string, any> = { authorId: userId };
-
-  if (status) where.status = status;
-  if (priority) where.priority = priority;
-  if (projectId) where.projectId = projectId;
-
-  const skip = (page - 1) * limit;
-
-  logger.info("Fetching all tasks");
-  const [tasks, total] = await Promise.all([
-    prisma.task.findMany({
-      where,
-      include: {
-        tags: true,
-        project: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.task.count({ where }),
-  ]);
-
-  const totalPages = Math.ceil(total / limit);
-
-  return {
-    data: tasks,
-    total,
-    page,
-    limit,
-    totalPages,
-  };
-};
-
-export const getTaskById = async (taskId: string, userId: string) => {
-  if (!taskId) {
-    logger.warn("Task ID is required");
-    throw new AppError("Task ID is required", 400);
-  }
-
-  const task = await prisma.task.findFirst({
-    where: {
-      id: taskId,
-      authorId: userId,
-    },
-    include: {
-      tags: true,
-      project: {
-        select: {
-          id: true,
-          name: true,
-          description: true,
-        },
-      },
-    },
-  });
-
-  if (!task) {
-    throw new AppError("Task not found", 404);
-  }
-  logger.info("Fetching task by ID: ", taskId);
-  return task;
-};
-
 export const UpdateTaskService = async (
   taskId: string,
   userId: string,
-  data: UpdateTaskInput,
+  data: any,
 ) => {
   const existingTask = await prisma.task.findFirst({
     where: {
@@ -209,24 +166,17 @@ export const UpdateTaskService = async (
   return task;
 };
 
-export const deleteTaskService = async (taskId: string, userId: string) => {
-  const task = await prisma.task.findFirst({
-    where: {
-      id: taskId,
-      authorId: userId,
-    },
-  });
-
-  if (!task) {
-    throw new AppError("Task not found", 404);
-  }
-
-  logger.info(`Deleting task with ID : ${taskId}`);
-
+/*
+export const createTaskService = async (
+  userId: string,
+  data: CreateTaskInput,
+) => {
+...
   await prisma.task.delete({
     where: { id: taskId },
   });
 };
+*/
 
 export const addTagsToTaskService = async (
   taskId: string,

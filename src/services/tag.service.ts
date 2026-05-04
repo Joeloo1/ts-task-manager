@@ -1,12 +1,9 @@
 import { prisma } from "../Config/database";
+import * as factory from "./handlerFactory.service";
 import AppError from "../utils/AppError";
 import logger from "../Config/winston";
 
-export const getAllTagsService = async () => {
-  const tags = await prisma.tag.findMany();
-  logger.info("Fetching all tags");
-  return tags;
-};
+export const getAllTagsService = factory.getAll(prisma.tag);
 
 export const createTagsService = async (name: string) => {
   const existingTag = await prisma.tag.findUnique({
@@ -25,3 +22,11 @@ export const createTagsService = async (name: string) => {
 
   return tag;
 };
+
+/*
+export const getAllTagsService = async () => {
+  const tags = await prisma.tag.findMany();
+  logger.info("Fetching all tags");
+  return tags;
+};
+*/
